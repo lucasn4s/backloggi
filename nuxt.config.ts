@@ -5,9 +5,12 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui'],
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
+    twitchClientId: process.env.TWITCH_CLIENT_ID,
+    twitchClientSecret: process.env.TWITCH_CLIENT_SECRET,
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     public: {
-      TWITCH_CLIENT_ID: process.env.TWITCH_CLIENT_ID,
-      TWITCH_CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET,
-    }
-  }
+      appUrl: process.env.NUXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    },
+  },
 })

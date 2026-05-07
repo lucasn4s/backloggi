@@ -23,6 +23,10 @@ npm run preview
 npm run generate
 ```
 
+### RESTRICTIONS
+
+- You should NEVER access sensitive files (like .env), if you need anything from that, ask the user to prompt the information.
+
 ### Running a Single Test
 
 No test framework is currently configured. If adding tests in the future:
