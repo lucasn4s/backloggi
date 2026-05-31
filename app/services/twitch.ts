@@ -4,28 +4,34 @@ interface TwitchTokenResponse {
   token_type: string
 }
 
-let cachedToken: { token: string; expiresAt: number } | null = null
+interface TwitchTokenCache {
+  token: string
+  expiresAt: number
+  clientId: string
+}
 
-export async function getTwitchAppToken(): Promise<string> {
-  if (cachedToken && Date.now() < cachedToken.expiresAt) {
+let cachedToken: TwitchTokenCache | null = null
+
+export async function getTwitchAppToken(clientId: string, clientSecret: string): Promise<string> {
+  if (cachedToken && cachedToken.clientId === clientId && Date.now() < cachedToken.expiresAt) {
     return cachedToken.token
   }
 
-  const config = useRuntimeConfig()
-
-  const params = new URLSearchParams({
-    client_id: config.twitchClientId,
-    client_secret: config.twitchClientSecret,
-    grant_type: 'client_credentials',
-  })
-
   const response = await fetch('https://id.twitch.tv/oauth2/token', {
     method: 'POST',
-    body: params,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: 'client_credentials',
+    }),
   })
 
   if (!response.ok) {
-    throw new Error(`Twitch auth failed: ${response.statusText}`)
+    const body = await response.text()
+    throw new Error(`Twitch auth failed (${response.status}): ${body}`)
   }
 
   const data: TwitchTokenResponse = await response.json()
@@ -33,6 +39,7 @@ export async function getTwitchAppToken(): Promise<string> {
   cachedToken = {
     token: data.access_token,
     expiresAt: Date.now() + (data.expires_in - 60) * 1000,
+    clientId,
   }
 
   return cachedToken.token

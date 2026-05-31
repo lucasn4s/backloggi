@@ -10,8 +10,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid game ID' })
   }
 
+  const config = useRuntimeConfig(event)
+
   try {
-    const game = await getGameById(id)
+    const game = await getGameById(id, config.twitchClientId, config.twitchClientSecret)
     return game
   } catch {
     throw createError({ statusCode: 404, message: 'Game not found' })

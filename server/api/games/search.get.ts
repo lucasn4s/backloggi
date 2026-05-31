@@ -11,10 +11,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Search query must be at least 2 characters' })
   }
 
+  const config = useRuntimeConfig(event)
   const page = Number(query.page) || 0
   const limit = 20
   const offset = page * limit
 
-  const games = await searchGames(q, limit, offset)
+  const games = await searchGames(q, config.twitchClientId, config.twitchClientSecret, limit, offset)
   return games
 })
