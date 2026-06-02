@@ -19,19 +19,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Entry not found' })
   }
 
-  await db.update(backlogEntries)
+  const [updated] = await db.update(backlogEntries)
     .set({
       status: body.status ?? entry.status,
       rating: body.rating !== undefined ? body.rating : entry.rating,
       notes: body.notes !== undefined ? body.notes : entry.notes,
-      updatedAt: Date.now(),
+      updatedAt: new Date(),
     })
     .where(eq(backlogEntries.id, id))
-
-  const [updated] = await db.query.backlogEntries.findMany({
-    where: eq(backlogEntries.id, id),
-    limit: 1,
-  })
+    .returning()
 
   return updated
 })

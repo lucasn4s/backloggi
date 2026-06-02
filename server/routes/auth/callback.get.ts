@@ -43,7 +43,6 @@ export default defineEventHandler(async (event) => {
       email: googleUser.email,
       name: googleUser.name,
       avatarUrl: googleUser.picture,
-      createdAt: Date.now(),
     })
 
     const session = await lucia.createSession(userId, {})
