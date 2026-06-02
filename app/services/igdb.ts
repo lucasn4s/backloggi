@@ -28,20 +28,20 @@ export interface IgdbGame {
   name: string
   cover?: { id: number; url: string }
   genres?: { id: number; name: string }[]
-  releaseDates?: { y: number; date: number }[]
+  release_dates?: { y: number }[]
   rating?: number
   summary?: string
   platforms?: { id: number; name: string }[]
-  totalRating?: number
+  total_rating?: number
 }
 
 export async function searchGames(query: string, clientId: string, clientSecret: string, limit = 20, offset = 0): Promise<IgdbGame[]> {
-  const igdbQuery = `search "${query}"; fields id, name, cover.url, genres.name, releaseDates.date, rating, summary, platforms.name, totalRating; limit ${limit}; offset ${offset};`
+  const igdbQuery = `search "${query}"; fields id, name, cover.url, genres.name, release_dates.y, rating, summary, platforms.name, total_rating; limit ${limit}; offset ${offset};`
   return igdbFetch<IgdbGame[]>('games', igdbQuery, clientId, clientSecret)
 }
 
 export async function getGameById(id: number, clientId: string, clientSecret: string): Promise<IgdbGame> {
-  const igdbQuery = `where id = ${id}; fields id, name, cover.url, genres.name, releaseDates.date, rating, summary, platforms.name, totalRating;`
+  const igdbQuery = `where id = ${id}; fields id, name, cover.url, genres.name, release_dates.y, rating, summary, platforms.name, total_rating;`
   const results = await igdbFetch<IgdbGame[]>('games', igdbQuery, clientId, clientSecret)
   if (results.length === 0) {
     throw new Error('Game not found')
@@ -50,8 +50,6 @@ export async function getGameById(id: number, clientId: string, clientSecret: st
 }
 
 export async function getTrendingGames(clientId: string, clientSecret: string, limit = 12): Promise<IgdbGame[]> {
-  const thirtyDaysAgo = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000)
-  const now = Math.floor(Date.now() / 1000)
-  const igdbQuery = `where releaseDates.date > ${thirtyDaysAgo} & releaseDates.date < ${now}; sort totalRating desc; limit ${limit}; fields id, name, cover.url, genres.name, releaseDates.date, rating, summary, platforms.name, totalRating;`
+  const igdbQuery = `where release_dates.y > 2024 & total_rating > 70; sort total_rating desc; limit ${limit}; fields id, name, cover.url, genres.name, release_dates.y, rating, summary, platforms.name, total_rating;`
   return igdbFetch<IgdbGame[]>('games', igdbQuery, clientId, clientSecret)
 }

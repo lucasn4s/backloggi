@@ -16,8 +16,8 @@ const coverUrl = computed(() => {
 })
 
 const releaseYear = computed(() => {
-  if (!props.game.releaseDates?.length) return null
-  return new Date(props.game.releaseDates[0].date * 1000).getFullYear()
+  if (!props.game.release_dates?.length) return null
+  return props.game.release_dates[0].y
 })
 </script>
 
