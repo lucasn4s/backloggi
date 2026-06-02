@@ -25,3 +25,6 @@ logs
 
 # Local database
 db/dev.db
+
+# OpenCode
+.opencode
