@@ -12,7 +12,7 @@ onMounted(async () => {
       <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <NuxtLink to="/" class="text-xl font-bold">Backloggi</NuxtLink>
         <nav v-if="isAuthenticated" class="flex items-center gap-4">
-          <NuxtLink to="/dashboard" class="text-sm text-gray-400 hover:text-white transition">
+          <NuxtLink to="/backlog" class="text-sm text-gray-400 hover:text-white transition">
             My Backlog
           </NuxtLink>
           <NuxtLink to="/games/search" class="text-sm text-gray-400 hover:text-white transition">

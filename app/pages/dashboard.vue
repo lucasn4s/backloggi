@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { isAuthenticated } = useAuth()
-const { grouped, loading, error, fetchBacklog, removeFromBacklog, updateEntry, addToBacklog } = useBacklog()
+const { grouped, loading, fetchBacklog, addToBacklog } = useBacklog()
 const { trendingGames, fetchTrending, loading: trendingLoading } = useGames()
 
 onMounted(async () => {
@@ -13,13 +13,12 @@ onMounted(async () => {
   await fetchTrending()
 })
 
-async function handleRemove(id: number) {
-  await removeFromBacklog(id)
-}
-
-async function handleUpdate(id: number, updates: { status?: 'playing' | 'backlog' | 'completed' | 'dropped'; rating?: number; notes?: string }) {
-  await updateEntry(id, updates)
-}
+const totalCount = computed(() =>
+  grouped.value.playing.length +
+  grouped.value.backlog.length +
+  grouped.value.completed.length +
+  grouped.value.dropped.length
+)
 
 async function handleAdd(gameId: number) {
   try {
@@ -32,15 +31,26 @@ async function handleAdd(gameId: number) {
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold">My Backlog</h1>
-      <NuxtLink to="/games/search" class="text-sm text-blue-400 hover:text-blue-300">
-        + Add Games
+    <!-- Stats Bar -->
+    <div v-if="loading" class="text-center py-4 text-gray-500">Loading...</div>
+    <div v-else-if="totalCount > 0" class="flex items-center gap-4 mb-6 text-sm text-gray-400 flex-wrap">
+      <span><span class="text-green-400 font-medium">{{ grouped.playing.length }}</span> Playing</span>
+      <span><span class="text-yellow-400 font-medium">{{ grouped.backlog.length }}</span> Backlog</span>
+      <span><span class="text-blue-400 font-medium">{{ grouped.completed.length }}</span> Completed</span>
+      <span><span class="text-red-400 font-medium">{{ grouped.dropped.length }}</span> Dropped</span>
+      <NuxtLink to="/backlog" class="text-blue-400 hover:text-blue-300 ml-auto">
+        View Backlog →
+      </NuxtLink>
+    </div>
+    <div v-else class="text-center py-4 mb-6">
+      <span class="text-gray-500">Your backlog is empty</span>
+      <NuxtLink to="/games/search" class="text-blue-400 hover:text-blue-300 ml-2">
+        Browse Games →
       </NuxtLink>
     </div>
 
     <!-- Trending Section -->
-    <section v-if="!trendingLoading && trendingGames.length > 0" class="mb-8">
+    <section v-if="!trendingLoading && trendingGames.length > 0">
       <h2 class="text-lg font-semibold mb-3 text-orange-400">Trending Games</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <GameCard
@@ -52,23 +62,5 @@ async function handleAdd(gameId: number) {
         />
       </div>
     </section>
-
-    <div v-if="loading" class="text-center py-12 text-gray-500">Loading...</div>
-
-    <div v-else-if="error" class="text-center py-12 text-red-400">{{ error }}</div>
-
-    <div v-else-if="grouped.playing.length + grouped.backlog.length + grouped.completed.length + grouped.dropped.length === 0 && !trendingGames.length" class="text-center py-12">
-      <p class="text-gray-500 mb-4">Your backlog is empty</p>
-      <NuxtLink to="/games/search" class="px-4 py-2 bg-blue-600 rounded-lg text-sm hover:bg-blue-700 transition">
-        Browse Games
-      </NuxtLink>
-    </div>
-
-    <template v-else>
-      <BacklogList status="playing" :entries="grouped.playing" @remove="handleRemove" @update="handleUpdate" />
-      <BacklogList status="backlog" :entries="grouped.backlog" @remove="handleRemove" @update="handleUpdate" />
-      <BacklogList status="completed" :entries="grouped.completed" @remove="handleRemove" @update="handleUpdate" />
-      <BacklogList status="dropped" :entries="grouped.dropped" @remove="handleRemove" @update="handleUpdate" />
-    </template>
   </div>
 </template>
