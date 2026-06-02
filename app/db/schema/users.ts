@@ -1,11 +1,11 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
-export const users = sqliteTable('users', {
+export const users = pgTable('users', {
   id: text('id').primaryKey(),
   email: text('email').notNull().unique(),
   name: text('name'),
   avatarUrl: text('avatar_url'),
-  createdAt: integer('created_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
 export type User = typeof users.$inferSelect

@@ -1,20 +1,19 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { pgTable, text, integer, timestamp, serial, pgEnum } from 'drizzle-orm/pg-core'
 import { users } from './users'
 
-export const statusEnum = ['playing', 'backlog', 'completed', 'dropped'] as const
-export type Status = (typeof statusEnum)[number]
+export const statusEnum = pgEnum('status', ['playing', 'backlog', 'completed', 'dropped'])
 
-export const backlogEntries = sqliteTable('backlog_entries', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const backlogEntries = pgTable('backlog_entries', {
+  id: serial('id').primaryKey(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   igdbGameId: integer('igdb_game_id').notNull(),
-  status: text('status').$type<Status>().default('backlog').notNull(),
+  status: statusEnum('status').default('backlog').notNull(),
   rating: integer('rating'),
   notes: text('notes'),
-  addedAt: integer('added_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
+  addedAt: timestamp('added_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
 export type BacklogEntry = typeof backlogEntries.$inferSelect

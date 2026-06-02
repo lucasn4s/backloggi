@@ -1,12 +1,12 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { users } from './users'
 
-export const sessions = sqliteTable('sessions', {
+export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  expiresAt: integer('expires_at').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
 })
 
 export type Session = typeof sessions.$inferSelect
