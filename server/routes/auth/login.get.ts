@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   setCookie(event, 'google_oauth_state', state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: 60 * 10,
     path: '/',
   })
@@ -17,6 +18,7 @@ export default defineEventHandler(async (event) => {
   setCookie(event, 'google_code_verifier', codeVerifier, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: 60 * 10,
     path: '/',
   })
