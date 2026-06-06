@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
 
   const blankCookie = lucia.createBlankSessionCookie()
   setCookie(event, blankCookie.name, blankCookie.value, {
-    path: '.',
+    path: '/',
     ...blankCookie.attributes,
   })
 

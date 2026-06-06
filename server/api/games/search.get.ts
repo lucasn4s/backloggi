@@ -1,18 +1,14 @@
 import { searchGames } from '~/services/igdb'
 import { requireAuth } from '#server/utils/auth'
+import { gameSearchQuerySchema } from '#server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
 
   const query = getQuery(event)
-  const q = (query.q as string)?.trim()
-
-  if (!q || q.length < 2) {
-    throw createError({ statusCode: 400, message: 'Search query must be at least 2 characters' })
-  }
+  const { q, page } = gameSearchQuerySchema.parse(query)
 
   const config = useRuntimeConfig(event)
-  const page = Number(query.page) || 0
   const limit = 20
   const offset = page * limit
 

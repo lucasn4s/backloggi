@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const codeVerifier = getCookie(event, 'google_code_verifier')
 
   if (!state || !code || !storedState || state !== storedState || !codeVerifier) {
-    throw createError({ statusCode: 400, message: 'Invalid OAuth state' })
+    throw createError({ statusCode: 400, message: 'Invalid OAuth state. Please try logging in again.' })
   }
 
   try {
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
       const session = await lucia.createSession(existingUser.id, {})
       const sessionCookie = lucia.createSessionCookie(session.id)
       setCookie(event, sessionCookie.name, sessionCookie.value, {
-        path: '.',
+        path: '/',
         ...sessionCookie.attributes,
       })
       return sendRedirect(event, '/dashboard')
@@ -48,19 +48,13 @@ export default defineEventHandler(async (event) => {
     const session = await lucia.createSession(userId, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
     setCookie(event, sessionCookie.name, sessionCookie.value, {
-      path: '.',
+      path: '/',
       ...sessionCookie.attributes,
     })
 
     return sendRedirect(event, '/dashboard')
   } catch (e) {
     console.error('Auth callback error:', e)
-    if (e instanceof Error) {
-      if (e.message.includes('invalid_grant')) {
-        throw createError({ statusCode: 400, message: 'OAuth code expired. Please try logging in again.' })
-      }
-      throw createError({ statusCode: 500, message: `Authentication failed: ${e.message}` })
-    }
-    throw createError({ statusCode: 500, message: 'Authentication failed' })
+    throw createError({ statusCode: 500, message: 'Authentication failed. Please try again.' })
   }
 })
