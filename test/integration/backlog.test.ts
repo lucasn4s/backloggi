@@ -8,7 +8,12 @@ vi.mock('~/services/db', () => ({
         findFirst: vi.fn().mockResolvedValue(null),
       },
     },
-    insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 1 }]) }) }),
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 1 }]),
+        onConflictDoUpdate: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue(undefined) }),
+      }),
+    }),
     update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 1 }]) }) }) }),
     delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }),
   },
@@ -20,6 +25,12 @@ vi.mock('~/services/db', () => ({
     rating: 'rating',
     notes: 'notes',
     addedAt: 'added_at',
+    updatedAt: 'updated_at',
+  },
+  games: {
+    igdbId: 'igdb_id',
+    name: 'name',
+    coverUrl: 'cover_url',
     updatedAt: 'updated_at',
   },
 }))
@@ -40,9 +51,9 @@ beforeEach(() => {
 })
 
 describe('Backlog GET handler', () => {
-  it('should return user backlog entries', async () => {
+  it('should return user backlog entries with game data', async () => {
     const mockEntries = [
-      { id: 1, userId: 'user_1', igdbGameId: 123, status: 'playing' },
+      { id: 1, userId: 'user_1', igdbGameId: 123, status: 'playing', game: { igdbId: 123, name: 'Test Game', coverUrl: null } },
     ]
     vi.mocked(db.query.backlogEntries.findMany).mockResolvedValue(mockEntries as any)
 
