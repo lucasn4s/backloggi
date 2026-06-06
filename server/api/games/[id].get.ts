@@ -1,14 +1,11 @@
 import { getGameById } from '~/services/igdb'
 import { requireAuth } from '#server/utils/auth'
+import { gameIdParamSchema } from '#server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
 
-  const id = Number(getRouterParam(event, 'id'))
-
-  if (!id || isNaN(id)) {
-    throw createError({ statusCode: 400, message: 'Invalid game ID' })
-  }
+  const { id } = gameIdParamSchema.parse({ id: getRouterParam(event, 'id') })
 
   const config = useRuntimeConfig(event)
 

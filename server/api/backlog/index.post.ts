@@ -1,20 +1,18 @@
 import { requireAuth } from '#server/utils/auth'
 import { db, backlogEntries } from '~/services/db'
 import { eq } from 'drizzle-orm'
+import { backlogCreateSchema, validateBody } from '#server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const { user } = await requireAuth(event)
 
   const body = await readBody(event)
-
-  if (!body.igdbGameId) {
-    throw createError({ statusCode: 400, message: 'igdbGameId is required' })
-  }
+  const data = validateBody(backlogCreateSchema, body)
 
   const existing = await db.query.backlogEntries.findFirst({
     where: (entries, { and }) => and(
       eq(entries.userId, user.id),
-      eq(entries.igdbGameId, body.igdbGameId),
+      eq(entries.igdbGameId, data.igdbGameId),
     ),
   })
 
@@ -24,8 +22,8 @@ export default defineEventHandler(async (event) => {
 
   const [entry] = await db.insert(backlogEntries).values({
     userId: user.id,
-    igdbGameId: body.igdbGameId,
-    status: body.status || 'backlog',
+    igdbGameId: data.igdbGameId,
+    status: data.status || 'backlog',
   }).returning()
 
   return entry
