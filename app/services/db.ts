@@ -7,4 +7,4 @@ const pool = new Pool({
 })
 
 export const db = drizzle(pool, { schema })
-export { users, sessions, backlogEntries } from '~/db/schema'
+export { users, sessions, backlogEntries, games } from '~/db/schema'
