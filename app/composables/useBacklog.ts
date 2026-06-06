@@ -2,8 +2,16 @@ import type { BacklogEntry } from '~/db/schema/backlogEntries'
 
 export type BacklogStatus = 'playing' | 'backlog' | 'completed' | 'dropped'
 
+export interface BacklogEntryWithGame extends BacklogEntry {
+  game: {
+    igdbId: number
+    name: string
+    coverUrl: string | null
+  } | null
+}
+
 export function useBacklog() {
-  const entries = ref<BacklogEntry[]>([])
+  const entries = ref<BacklogEntryWithGame[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -11,7 +19,7 @@ export function useBacklog() {
     loading.value = true
     error.value = null
     try {
-      entries.value = await $fetch<BacklogEntry[]>('/api/backlog')
+      entries.value = await $fetch<BacklogEntryWithGame[]>('/api/backlog')
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to load backlog'
     } finally {
@@ -19,12 +27,17 @@ export function useBacklog() {
     }
   }
 
-  async function addToBacklog(igdbGameId: number, status?: BacklogStatus) {
+  async function addToBacklog(igdbGameId: number, options?: { status?: BacklogStatus; gameName?: string; gameCoverUrl?: string | null }) {
     error.value = null
     try {
-      const entry = await $fetch<BacklogEntry>('/api/backlog', {
+      const entry = await $fetch<BacklogEntryWithGame>('/api/backlog', {
         method: 'POST',
-        body: { igdbGameId, status },
+        body: {
+          igdbGameId,
+          status: options?.status,
+          gameName: options?.gameName ?? `Game #${igdbGameId}`,
+          gameCoverUrl: options?.gameCoverUrl ?? null,
+        },
       })
       entries.value.unshift(entry)
       return entry
@@ -37,7 +50,7 @@ export function useBacklog() {
   async function updateEntry(id: number, updates: { status?: BacklogStatus; rating?: number; notes?: string }) {
     error.value = null
     try {
-      const updated = await $fetch<BacklogEntry>(`/api/backlog/${id}`, {
+      const updated = await $fetch<BacklogEntryWithGame>(`/api/backlog/${id}`, {
         method: 'PATCH',
         body: updates,
       })
@@ -64,7 +77,7 @@ export function useBacklog() {
   }
 
   const grouped = computed(() => {
-    const groups: Record<BacklogStatus, BacklogEntry[]> = {
+    const groups: Record<BacklogStatus, BacklogEntryWithGame[]> = {
       playing: [],
       backlog: [],
       completed: [],
