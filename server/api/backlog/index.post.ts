@@ -22,24 +22,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, message: 'Game already in backlog' })
   }
 
-  const now = Date.now()
-
-  await db.insert(backlogEntries).values({
+  const [entry] = await db.insert(backlogEntries).values({
     userId: user.id,
     igdbGameId: body.igdbGameId,
     status: body.status || 'backlog',
-    addedAt: now,
-    updatedAt: now,
-  })
-
-  const [entry] = await db.query.backlogEntries.findMany({
-    where: (entries, { and }) => and(
-      eq(entries.userId, user.id),
-      eq(entries.igdbGameId, body.igdbGameId),
-    ),
-    limit: 1,
-    orderBy: (entries, { desc }) => [desc(entries.addedAt)],
-  })
+  }).returning()
 
   return entry
 })
