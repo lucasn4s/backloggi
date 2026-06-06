@@ -1,13 +1,11 @@
 <script setup lang="ts">
-const { isAuthenticated } = useAuth()
+definePageMeta({
+  middleware: 'auth',
+})
+
 const { grouped, loading, error, fetchBacklog, removeFromBacklog, updateEntry } = useBacklog()
 
 onMounted(async () => {
-  await useAuth().fetchSession()
-  if (!isAuthenticated.value) {
-    await navigateTo('/')
-    return
-  }
   await fetchBacklog()
 })
 

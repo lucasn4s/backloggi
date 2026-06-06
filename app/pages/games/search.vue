@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth',
+})
+
 const searchQuery = ref('')
 const page = ref(0)
 const { searchResults, loading, error, searchGames } = useGames()

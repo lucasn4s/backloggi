@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { IgdbGame } from '~/services/igdb'
 
+definePageMeta({
+  middleware: 'auth',
+})
+
 const route = useRoute()
 const gameId = Number(route.params.id)
 
@@ -24,11 +28,6 @@ const genres = computed(() => game.value?.genres?.map(g => g.name).join(', ') ||
 const platforms = computed(() => game.value?.platforms?.map(p => p.name).join(', ') || null)
 
 onMounted(async () => {
-  await useAuth().fetchSession()
-  if (!useAuth().isAuthenticated.value) {
-    await navigateTo('/')
-    return
-  }
   await fetchBacklog()
   game.value = await fetchGameById(gameId)
 })
