@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { BacklogEntry } from '~/db/schema/backlogEntries'
+import type { BacklogEntryWithGame } from '~/composables/useBacklog'
 import type { BacklogStatus } from '~/composables/useBacklog'
 
 const props = defineProps<{
   status: BacklogStatus
-  entries: BacklogEntry[]
+  entries: BacklogEntryWithGame[]
 }>()
 
 const emit = defineEmits<{
@@ -25,6 +25,11 @@ const statusColors: Record<BacklogStatus, string> = {
   completed: 'text-blue-400',
   dropped: 'text-red-400',
 }
+
+function coverUrl(entry: BacklogEntryWithGame): string | null {
+  if (!entry.game?.coverUrl) return null
+  return `https:${entry.game.coverUrl.replace('t_thumb', 't_cover_big')}`
+}
 </script>
 
 <template>
@@ -38,7 +43,16 @@ const statusColors: Record<BacklogStatus, string> = {
         :key="entry.id"
         class="bg-gray-900 rounded-lg p-3 flex flex-col gap-2"
       >
-        <div class="text-sm font-medium truncate">Game #{{ entry.igdbGameId }}</div>
+        <img
+          v-if="coverUrl(entry)"
+          :src="coverUrl(entry)"
+          :alt="entry.game?.name"
+          class="w-full aspect-[3/4] object-cover rounded"
+        />
+        <div v-else class="w-full aspect-[3/4] bg-gray-800 rounded flex items-center justify-center text-gray-600 text-xs">
+          No Cover
+        </div>
+        <div class="text-sm font-medium truncate">{{ entry.game?.name ?? `Game #${entry.igdbGameId}` }}</div>
         <div class="flex gap-1 mt-auto">
           <select
             :value="entry.status"

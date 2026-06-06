@@ -7,7 +7,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  add: [gameId: number]
+  add: [game: IgdbGame]
 }>()
 
 const coverUrl = computed(() => {
@@ -44,7 +44,7 @@ const releaseYear = computed(() => {
           size="sm"
           color="primary"
           variant="solid"
-          @click.prevent="emit('add', game.id)"
+          @click.prevent="emit('add', game)"
           class="w-full"
         >
           Add to Backlog

@@ -33,7 +33,10 @@ onMounted(async () => {
 })
 
 async function handleAdd() {
-  await addToBacklog(gameId)
+  await addToBacklog(gameId, {
+    gameName: game.value?.name ?? `Game #${gameId}`,
+    gameCoverUrl: game.value?.cover?.url ?? null,
+  })
 }
 
 async function handleRemove() {

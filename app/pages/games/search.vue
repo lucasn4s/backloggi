@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { IgdbGame } from '~/services/igdb'
+
 definePageMeta({
   middleware: 'auth',
 })
@@ -14,9 +16,12 @@ async function handleSearch() {
   await searchGames(searchQuery.value, page.value)
 }
 
-async function handleAdd(gameId: number) {
+async function handleAdd(game: IgdbGame) {
   try {
-    await addToBacklog(gameId)
+    await addToBacklog(game.id, {
+      gameName: game.name,
+      gameCoverUrl: game.cover?.url ?? null,
+    })
   } catch {
     // Error handled by composable
   }
