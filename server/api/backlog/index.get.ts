@@ -8,6 +8,9 @@ export default defineEventHandler(async (event) => {
   const entries = await db.query.backlogEntries.findMany({
     where: eq(backlogEntries.userId, user.id),
     orderBy: (entries, { desc }) => [desc(entries.updatedAt)],
+    with: {
+      game: true,
+    },
   })
 
   return entries
