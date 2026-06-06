@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 export const backlogCreateSchema = z.object({
   igdbGameId: z.number().int().positive(),
+  gameName: z.string().min(1),
+  gameCoverUrl: z.string().nullable().optional(),
   status: z.enum(['playing', 'backlog', 'completed', 'dropped']).optional(),
 })
 

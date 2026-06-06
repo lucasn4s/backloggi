@@ -1,5 +1,5 @@
 import { requireAuth } from '#server/utils/auth'
-import { db, backlogEntries } from '~/services/db'
+import { db, backlogEntries, games } from '~/services/db'
 import { eq } from 'drizzle-orm'
 import { backlogCreateSchema, validateBody } from '#server/utils/validation'
 
@@ -19,6 +19,21 @@ export default defineEventHandler(async (event) => {
   if (existing) {
     throw createError({ statusCode: 409, message: 'Game already in backlog' })
   }
+
+  await db.insert(games)
+    .values({
+      igdbId: data.igdbGameId,
+      name: data.gameName,
+      coverUrl: data.gameCoverUrl ?? null,
+    })
+    .onConflictDoUpdate({
+      target: games.igdbId,
+      set: {
+        name: data.gameName,
+        coverUrl: data.gameCoverUrl ?? null,
+        updatedAt: new Date(),
+      },
+    })
 
   const [entry] = await db.insert(backlogEntries).values({
     userId: user.id,
