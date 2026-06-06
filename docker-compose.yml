@@ -4,9 +4,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: backloggi
-      POSTGRES_PASSWORD: backloggi
-      POSTGRES_DB: backloggi
+      POSTGRES_USER: ${POSTGRES_USER:-backloggi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-backloggi_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-backloggi}
     volumes:
       - pgdata:/var/lib/postgresql/data
 
