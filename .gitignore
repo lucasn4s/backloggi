@@ -28,3 +28,6 @@ db/dev.db
 
 # OpenCode
 .opencode
+
+# Vercel
+.vercel
