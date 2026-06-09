@@ -21,7 +21,7 @@ export default defineNuxtConfig({
         'style-src': ["'self'", "'unsafe-inline'"],
         'img-src': ["'self'", 'data:', 'https://images.igdb.com', 'https://lh3.googleusercontent.com'],
         'font-src': ["'self'"],
-        'connect-src': ["'self'", 'https://backloggi.vercel.app'],
+        'connect-src': ["'self'", process.env.NUXT_PUBLIC_APP_URL || 'http://localhost:3000'],
         'frame-ancestors': ["'none'"],
       },
       strictTransportSecurity: {

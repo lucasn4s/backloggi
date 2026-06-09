@@ -31,3 +31,6 @@ db/dev.db
 
 # Vercel
 .vercel
+
+# Agent planning artifacts
+docs/superpowers/
