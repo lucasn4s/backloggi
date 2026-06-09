@@ -21,7 +21,7 @@ const coverUrl = computed(() => {
 
 const releaseYear = computed(() => {
   if (!game.value?.release_dates?.length) return null
-  return game.value.release_dates[0].y
+  return game.value.release_dates[0]?.y
 })
 
 const genres = computed(() => game.value?.genres?.map(g => g.name).join(', ') || null)

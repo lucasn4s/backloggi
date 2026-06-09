@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { IgdbGame } from '~/services/igdb'
+
 definePageMeta({
   middleware: 'auth',
 })
@@ -18,9 +20,12 @@ const totalCount = computed(() =>
   grouped.value.dropped.length
 )
 
-async function handleAdd(gameId: number) {
+async function handleAdd(game: IgdbGame) {
   try {
-    await addToBacklog(gameId)
+    await addToBacklog(game.id, {
+      gameName: game.name,
+      gameCoverUrl: game.cover?.url ?? null,
+    })
   } catch {
     // Error handled by composable
   }
@@ -30,14 +35,20 @@ async function handleAdd(gameId: number) {
 <template>
   <div>
     <div v-if="loading" class="text-center py-4 text-gray-500">Loading...</div>
-    <div v-else-if="totalCount > 0" class="flex items-center gap-4 mb-6 text-sm text-gray-400 flex-wrap">
+    <div v-else-if="totalCount > 0" class="border border-blue-900 rounded-xl flex items-center gap-4 mb-6 text-sm text-gray-400 flex-wrap px-6 py-3">
       <span><span class="text-green-400 font-medium">{{ grouped.playing.length }}</span> Playing</span>
       <span><span class="text-yellow-400 font-medium">{{ grouped.backlog.length }}</span> Backlog</span>
       <span><span class="text-blue-400 font-medium">{{ grouped.completed.length }}</span> Completed</span>
       <span><span class="text-red-400 font-medium">{{ grouped.dropped.length }}</span> Dropped</span>
-      <NuxtLink to="/backlog" class="text-blue-400 hover:text-blue-300 ml-auto">
+      <UButton
+        size="sm"
+        color="neutral"
+        class="ml-auto cursor-pointer"
+        variant="outline"
+        @click.prevent="useRouter().push('/backlog')"
+      >
         View Backlog
-      </NuxtLink>
+      </UButton>
     </div>
     <div v-else class="text-center py-4 mb-6">
       <span class="text-gray-500">Your backlog is empty</span>

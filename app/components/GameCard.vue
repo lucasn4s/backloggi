@@ -17,7 +17,7 @@ const coverUrl = computed(() => {
 
 const releaseYear = computed(() => {
   if (!props.game.release_dates?.length) return null
-  return props.game.release_dates[0].y
+  return props.game.release_dates[0]?.y
 })
 </script>
 
@@ -43,7 +43,7 @@ const releaseYear = computed(() => {
         <UButton
           size="sm"
           color="primary"
-          variant="solid"
+          variant="outline"
           @click.prevent="emit('add', game)"
           class="w-full"
         >

@@ -26,8 +26,8 @@ const statusColors: Record<BacklogStatus, string> = {
   dropped: 'text-red-400',
 }
 
-function coverUrl(entry: BacklogEntryWithGame): string | null {
-  if (!entry.game?.coverUrl) return null
+function coverUrl(entry: BacklogEntryWithGame): string | undefined {
+  if (!entry.game?.coverUrl) return undefined
   return `https:${entry.game.coverUrl.replace('t_thumb', 't_cover_big')}`
 }
 </script>

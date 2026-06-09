@@ -54,11 +54,7 @@ export function useBacklog() {
         method: 'PATCH',
         body: updates,
       })
-      const index = entries.value.findIndex(e => e.id === id)
-      if (index !== -1) {
-        entries.value[index] = updated
-      }
-      return updated
+      fetchBacklog();
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to update entry'
       throw e
@@ -69,7 +65,7 @@ export function useBacklog() {
     error.value = null
     try {
       await $fetch(`/api/backlog/${id}`, { method: 'DELETE' })
-      entries.value = entries.value.filter(e => e.id !== id)
+      fetchBacklog();
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to remove from backlog'
       throw e
