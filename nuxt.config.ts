@@ -32,9 +32,5 @@ export default defineNuxtConfig({
       xContentTypeOptions: 'nosniff',
       referrerPolicy: 'strict-origin-when-cross-origin',
     },
-    rateLimiter: {
-      tokensPerInterval: 20,
-      interval: 'minute',
-    },
   },
 })
