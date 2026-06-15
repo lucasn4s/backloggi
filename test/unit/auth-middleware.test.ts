@@ -44,6 +44,13 @@ describe('Global auth middleware', () => {
     expect(mockRequireAuth).not.toHaveBeenCalled()
   })
 
+  it('should treat query strings as the same path for allowlist matching', async () => {
+    vi.resetModules()
+    const { default: middleware } = await import('#server/middleware/auth')
+    await middleware(makeEvent('/api/auth/session?ref=email'), {} as any)
+    expect(mockRequireAuth).not.toHaveBeenCalled()
+  })
+
   it('should propagate errors thrown by requireAuth', async () => {
     vi.resetModules()
     mockRequireAuth.mockRejectedValueOnce(new Error('Unauthorized'))

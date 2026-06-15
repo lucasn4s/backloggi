@@ -5,7 +5,8 @@ const PUBLIC_API_PATHS = new Set<string>([
 ])
 
 export default defineEventHandler(async (event) => {
-  const path = event.path ?? getRequestURL(event).pathname
+  const rawPath = event.path ?? getRequestURL(event).pathname
+  const path = rawPath.split('?')[0]
 
   if (!path.startsWith('/api/')) return
   if (PUBLIC_API_PATHS.has(path)) return
