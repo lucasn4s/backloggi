@@ -35,8 +35,18 @@ export interface IgdbGame {
   total_rating?: number
 }
 
+export function sanitizeIgdbSearchQuery(query: string): string {
+  return query
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/[;#]/g, '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim()
+}
+
 export async function searchGames(query: string, clientId: string, clientSecret: string, limit = 20, offset = 0): Promise<IgdbGame[]> {
-  const igdbQuery = `search "${query}"; fields id, name, cover.url, genres.name, release_dates.y, rating, summary, platforms.name, total_rating; limit ${limit}; offset ${offset};`
+  const safeQuery = sanitizeIgdbSearchQuery(query)
+  const igdbQuery = `search "${safeQuery}"; fields id, name, cover.url, genres.name, release_dates.y, rating, summary, platforms.name, total_rating; limit ${limit}; offset ${offset};`
   return igdbFetch<IgdbGame[]>('games', igdbQuery, clientId, clientSecret)
 }
 
