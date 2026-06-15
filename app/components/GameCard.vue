@@ -45,7 +45,7 @@ const releaseYear = computed(() => {
           color="primary"
           variant="outline"
           @click.prevent="emit('add', game)"
-          class="w-full"
+          class="w-full cursor-pointer"
         >
           Add to Backlog
         </UButton>
