@@ -70,7 +70,7 @@ describe('IGDB Service', () => {
     it('should escape double quotes to prevent string break-out', async () => {
       const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
       expect(sanitizeIgdbSearchQuery('a"b')).toBe('a\\"b')
-      expect(sanitizeIgdbSearchQuery('"; where id = 1; #')).toBe('\\" where id = 1')
+      expect(sanitizeIgdbSearchQuery('"; where id = 1; #')).toBe('\\"  where id = 1')
     })
 
     it('should escape backslashes before quotes', async () => {
@@ -79,10 +79,10 @@ describe('IGDB Service', () => {
       expect(sanitizeIgdbSearchQuery('a\\"b')).toBe('a\\\\\\"b')
     })
 
-    it('should strip semicolons and hashes used as IGDB command terminators', async () => {
+    it('should replace semicolons and hashes with spaces (preserves word boundaries)', async () => {
       const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
-      expect(sanitizeIgdbSearchQuery('Zelda; DROP')).toBe('Zelda DROP')
-      expect(sanitizeIgdbSearchQuery('query#comment')).toBe('querycomment')
+      expect(sanitizeIgdbSearchQuery('Zelda; DROP')).toBe('Zelda  DROP')
+      expect(sanitizeIgdbSearchQuery('query#comment')).toBe('query comment')
     })
 
     it('should normalize newlines and carriage returns', async () => {
@@ -147,7 +147,7 @@ describe('IGDB Service', () => {
       expect(igdbCall).toBeDefined()
       const body = igdbCall![1]!.body as string
       expect(body).not.toContain('"Zelda"; DROP"')
-      expect(body).toContain('Zelda\\" DROP')
+      expect(body).toContain('Zelda\\"  DROP')
     })
   })
 

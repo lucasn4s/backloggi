@@ -39,7 +39,7 @@ export function sanitizeIgdbSearchQuery(query: string): string {
   return query
     .replace(/\\/g, '\\\\')
     .replace(/"/g, '\\"')
-    .replace(/[;#]/g, '')
+    .replace(/[;#]/g, ' ')
     .replace(/[\r\n]+/g, ' ')
     .trim()
 }
