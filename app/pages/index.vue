@@ -8,7 +8,7 @@ onMounted(async () => {
     return
   }
   if (expired) {
-    await navigateTo('/auth/login')
+    await navigateTo('/auth/login', { external: true })
   }
 })
 </script>

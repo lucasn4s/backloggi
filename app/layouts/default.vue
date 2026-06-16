@@ -4,7 +4,7 @@ const { isAuthenticated, user, signOut, fetchSession } = useAuth()
 onMounted(async () => {
   const expired = await fetchSession()
   if (expired) {
-    await navigateTo('/auth/login')
+    await navigateTo('/auth/login', { external: true })
   }
 })
 </script>

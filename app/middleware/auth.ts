@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!isAuthenticated.value) {
     const expired = await fetchSession()
     if (expired) {
-      return navigateTo('/auth/login')
+      return navigateTo('/auth/login', { external: true })
     }
   }
 
