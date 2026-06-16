@@ -1,5 +1,7 @@
 import type { Session, User } from 'lucia'
 
+const SESSION_COOKIE_NAME = 'auth_session'
+
 export function useAuth() {
   const session = useState<Session | null>('auth-session', () => null)
   const user = useState<User | null>('auth-user', () => null)
@@ -7,6 +9,8 @@ export function useAuth() {
   const isAuthenticated = computed(() => !!session.value)
 
   async function fetchSession() {
+    const hadCookie = !!useCookie(SESSION_COOKIE_NAME).value
+
     try {
       const data = await $fetch<{ session: Session; user: User }>('/api/auth/session')
       session.value = data.session
@@ -14,6 +18,10 @@ export function useAuth() {
     } catch {
       session.value = null
       user.value = null
+
+      if (hadCookie) {
+        await navigateTo('/auth/login')
+      }
     }
   }
 
