@@ -1,8 +1,11 @@
 <script setup lang="ts">
-const { isAuthenticated, user, signOut } = useAuth()
+const { isAuthenticated, user, signOut, fetchSession } = useAuth()
 
 onMounted(async () => {
-  await useAuth().fetchSession()
+  const expired = await fetchSession()
+  if (expired) {
+    await navigateTo('/auth/login')
+  }
 })
 </script>
 
