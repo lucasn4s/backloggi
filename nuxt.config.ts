@@ -9,6 +9,8 @@ export default defineNuxtConfig({
     twitchClientSecret: process.env.TWITCH_CLIENT_SECRET,
     googleClientId: process.env.GOOGLE_CLIENT_ID,
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    upstashRedisRestUrl: process.env.UPSTASH_REDIS_REST_URL,
+    upstashRedisRestToken: process.env.UPSTASH_REDIS_REST_TOKEN,
     public: {
       appUrl: process.env.NUXT_PUBLIC_APP_URL || 'http://localhost:3000',
     },
