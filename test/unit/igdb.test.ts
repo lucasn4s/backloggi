@@ -27,16 +27,19 @@ describe('IGDB Service', () => {
       )
     })
 
-    it('should throw on failed auth', async () => {
+    it('should throw a generic error with statusCode 502 on failed auth', async () => {
       vi.mocked(global.fetch).mockResolvedValue({
         ok: false,
         status: 400,
-        text: () => Promise.resolve('Bad Request'),
+        text: () => Promise.resolve('internal secret body'),
       } as Response)
 
       const { getTwitchAppToken } = await import('~/services/twitch')
 
-      await expect(getTwitchAppToken('bad_id', 'bad_secret')).rejects.toThrow('Twitch auth failed (400)')
+      await expect(getTwitchAppToken('bad_id', 'bad_secret')).rejects.toMatchObject({
+        statusCode: 502,
+        message: 'External service unavailable',
+      })
     })
 
     it('should cache token and reuse it', async () => {
@@ -148,6 +151,31 @@ describe('IGDB Service', () => {
       const body = igdbCall![1]!.body as string
       expect(body).not.toContain('"Zelda"; DROP"')
       expect(body).toContain('Zelda\\"  DROP')
+    })
+
+    it('should throw a generic error with statusCode 502 when IGDB fails', async () => {
+      const tokenFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ access_token: 'test_token', expires_in: 3600, token_type: 'bearer' }),
+      })
+      const igdbFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve('internal igdb secret body'),
+      })
+
+      vi.mocked(global.fetch)
+        .mockImplementation((url: string) => {
+          if (url.includes('twitch')) return tokenFetch()
+          return igdbFetch()
+        })
+
+      const { searchGames } = await import('~/services/igdb')
+
+      await expect(searchGames('Zelda', 'client_id', 'client_secret')).rejects.toMatchObject({
+        statusCode: 502,
+        message: 'External service unavailable',
+      })
     })
   })
 
