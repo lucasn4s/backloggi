@@ -10,26 +10,32 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = validateBody(backlogUpdateSchema, body)
 
-  const entry = await db.query.backlogEntries.findFirst({
-    where: and(
-      eq(backlogEntries.id, id),
-      eq(backlogEntries.userId, user.id),
-    ),
-  })
-
-  if (!entry) {
-    throw createError({ statusCode: 404, message: 'Entry not found' })
-  }
-
-  const [updated] = await db.update(backlogEntries)
-    .set({
-      status: data.status ?? entry.status,
-      rating: data.rating !== undefined ? data.rating : entry.rating,
-      notes: data.notes !== undefined ? data.notes : entry.notes,
-      updatedAt: new Date(),
+  try {
+    const entry = await db.query.backlogEntries.findFirst({
+      where: and(
+        eq(backlogEntries.id, id),
+        eq(backlogEntries.userId, user.id),
+      ),
     })
-    .where(eq(backlogEntries.id, id))
-    .returning()
 
-  return updated
+    if (!entry) {
+      throw createError({ statusCode: 404, message: 'Entry not found' })
+    }
+
+    const [updated] = await db.update(backlogEntries)
+      .set({
+        status: data.status ?? entry.status,
+        rating: data.rating !== undefined ? data.rating : entry.rating,
+        notes: data.notes !== undefined ? data.notes : entry.notes,
+        updatedAt: new Date(),
+      })
+      .where(eq(backlogEntries.id, id))
+      .returning()
+
+    return updated
+  } catch (err) {
+    if (err instanceof Error && 'statusCode' in err) throw err
+    console.error('Failed to update backlog entry:', err)
+    throw createError({ statusCode: 500, message: 'Internal server error' })
+  }
 })
