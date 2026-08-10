@@ -22,6 +22,17 @@ export const gameIdParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 })
 
+export const googleOAuthQuerySchema = z.object({
+  state: z.string().min(1),
+  code: z.string().min(1),
+})
+
+export const googleUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().optional().default(''),
+  picture: z.string().url().refine((url) => url.startsWith('https://'), 'Picture must be an https URL').nullable().optional().default(null),
+})
+
 export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): T {
   const result = schema.safeParse(body)
   if (!result.success) {
