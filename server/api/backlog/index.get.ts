@@ -5,13 +5,19 @@ import { eq } from 'drizzle-orm'
 export default defineEventHandler(async (event) => {
   const { user } = await requireAuth(event)
 
-  const entries = await db.query.backlogEntries.findMany({
-    where: eq(backlogEntries.userId, user.id),
-    orderBy: (entries, { desc }) => [desc(entries.updatedAt)],
-    with: {
-      game: true,
-    },
-  })
+  try {
+    const entries = await db.query.backlogEntries.findMany({
+      where: eq(backlogEntries.userId, user.id),
+      orderBy: (entries, { desc }) => [desc(entries.updatedAt)],
+      with: {
+        game: true,
+      },
+    })
 
-  return entries
+    return entries
+  } catch (err) {
+    if (err instanceof Error && 'statusCode' in err) throw err
+    console.error('Failed to fetch backlog:', err)
+    throw createError({ statusCode: 500, message: 'Internal server error' })
+  }
 })

@@ -79,14 +79,17 @@ async function handleRemove() {
         <div class="flex gap-3">
           <UButton
             v-if="!existingEntry"
+            class="cursor-pointer"
             color="primary"
+            variant="outline"
             @click="handleAdd"
           >
             Add to Backlog
           </UButton>
           <UButton
             v-else
-            color="red"
+            class="cursor-pointer"
+            color="error"
             variant="outline"
             @click="handleRemove"
           >

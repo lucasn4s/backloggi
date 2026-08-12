@@ -9,37 +9,43 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = validateBody(backlogCreateSchema, body)
 
-  const existing = await db.query.backlogEntries.findFirst({
-    where: (entries, { and }) => and(
-      eq(entries.userId, user.id),
-      eq(entries.igdbGameId, data.igdbGameId),
-    ),
-  })
-
-  if (existing) {
-    throw createError({ statusCode: 409, message: 'Game already in backlog' })
-  }
-
-  await db.insert(games)
-    .values({
-      igdbId: data.igdbGameId,
-      name: data.gameName,
-      coverUrl: data.gameCoverUrl ?? null,
+  try {
+    const existing = await db.query.backlogEntries.findFirst({
+      where: (entries, { and }) => and(
+        eq(entries.userId, user.id),
+        eq(entries.igdbGameId, data.igdbGameId),
+      ),
     })
-    .onConflictDoUpdate({
-      target: games.igdbId,
-      set: {
+
+    if (existing) {
+      throw createError({ statusCode: 409, message: 'Game already in backlog' })
+    }
+
+    await db.insert(games)
+      .values({
+        igdbId: data.igdbGameId,
         name: data.gameName,
         coverUrl: data.gameCoverUrl ?? null,
-        updatedAt: new Date(),
-      },
-    })
+      })
+      .onConflictDoUpdate({
+        target: games.igdbId,
+        set: {
+          name: data.gameName,
+          coverUrl: data.gameCoverUrl ?? null,
+          updatedAt: new Date(),
+        },
+      })
 
-  const [entry] = await db.insert(backlogEntries).values({
-    userId: user.id,
-    igdbGameId: data.igdbGameId,
-    status: data.status || 'backlog',
-  }).returning()
+    const [entry] = await db.insert(backlogEntries).values({
+      userId: user.id,
+      igdbGameId: data.igdbGameId,
+      status: data.status || 'backlog',
+    }).returning()
 
-  return entry
+    return entry
+  } catch (err) {
+    if (err instanceof Error && 'statusCode' in err) throw err
+    console.error('Failed to create backlog entry:', err)
+    throw createError({ statusCode: 500, message: 'Internal server error' })
+  }
 })

@@ -27,16 +27,19 @@ describe('IGDB Service', () => {
       )
     })
 
-    it('should throw on failed auth', async () => {
+    it('should throw a generic error with statusCode 502 on failed auth', async () => {
       vi.mocked(global.fetch).mockResolvedValue({
         ok: false,
         status: 400,
-        text: () => Promise.resolve('Bad Request'),
+        text: () => Promise.resolve('internal secret body'),
       } as Response)
 
       const { getTwitchAppToken } = await import('~/services/twitch')
 
-      await expect(getTwitchAppToken('bad_id', 'bad_secret')).rejects.toThrow('Twitch auth failed (400)')
+      await expect(getTwitchAppToken('bad_id', 'bad_secret')).rejects.toMatchObject({
+        statusCode: 502,
+        message: 'External service unavailable',
+      })
     })
 
     it('should cache token and reuse it', async () => {
@@ -56,6 +59,48 @@ describe('IGDB Service', () => {
       expect(token1).toBe('cached_token')
       expect(token2).toBe('cached_token')
       expect(global.fetch).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('sanitizeIgdbSearchQuery', () => {
+    it('should return the query unchanged when safe', async () => {
+      const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
+      expect(sanitizeIgdbSearchQuery('Zelda')).toBe('Zelda')
+      expect(sanitizeIgdbSearchQuery('Final Fantasy VII')).toBe('Final Fantasy VII')
+      expect(sanitizeIgdbSearchQuery('  Hollow Knight  ')).toBe('Hollow Knight')
+    })
+
+    it('should escape double quotes to prevent string break-out', async () => {
+      const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
+      expect(sanitizeIgdbSearchQuery('a"b')).toBe('a\\"b')
+      expect(sanitizeIgdbSearchQuery('"; where id = 1; #')).toBe('\\"  where id = 1')
+    })
+
+    it('should escape backslashes before quotes', async () => {
+      const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
+      expect(sanitizeIgdbSearchQuery('a\\b')).toBe('a\\\\b')
+      expect(sanitizeIgdbSearchQuery('a\\"b')).toBe('a\\\\\\"b')
+    })
+
+    it('should replace semicolons and hashes with spaces (preserves word boundaries)', async () => {
+      const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
+      expect(sanitizeIgdbSearchQuery('Zelda; DROP')).toBe('Zelda  DROP')
+      expect(sanitizeIgdbSearchQuery('query#comment')).toBe('query comment')
+    })
+
+    it('should normalize newlines and carriage returns', async () => {
+      const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
+      expect(sanitizeIgdbSearchQuery('foo\nbar')).toBe('foo bar')
+      expect(sanitizeIgdbSearchQuery('foo\r\nbar')).toBe('foo bar')
+    })
+
+    it('should neutralize the audit injection payload', async () => {
+      const { sanitizeIgdbSearchQuery } = await import('~/services/igdb')
+      const malicious = '"; where id = 1; #'
+      const safe = sanitizeIgdbSearchQuery(malicious)
+      expect(safe).not.toMatch(/(?<!\\)"/)
+      expect(safe).not.toContain(';')
+      expect(safe).not.toContain('#')
     })
   })
 
@@ -80,6 +125,57 @@ describe('IGDB Service', () => {
       const results = await searchGames('Zelda', 'client_id', 'client_secret')
 
       expect(results).toEqual([{ id: 1, name: 'Zelda' }])
+    })
+
+    it('should pass sanitized user input to the IGDB body', async () => {
+      const tokenFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ access_token: 'test_token', expires_in: 3600, token_type: 'bearer' }),
+      })
+      const igdbFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve([]),
+      })
+
+      vi.mocked(global.fetch)
+        .mockImplementation((url: string) => {
+          if (url.includes('twitch')) return tokenFetch()
+          return igdbFetch()
+        })
+
+      const { searchGames } = await import('~/services/igdb')
+      await searchGames('Zelda"; DROP', 'client_id', 'client_secret')
+
+      const igdbCall = vi.mocked(global.fetch).mock.calls.find(([url]) => (url as string).includes('igdb'))
+      expect(igdbCall).toBeDefined()
+      const body = igdbCall![1]!.body as string
+      expect(body).not.toContain('"Zelda"; DROP"')
+      expect(body).toContain('Zelda\\"  DROP')
+    })
+
+    it('should throw a generic error with statusCode 502 when IGDB fails', async () => {
+      const tokenFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ access_token: 'test_token', expires_in: 3600, token_type: 'bearer' }),
+      })
+      const igdbFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve('internal igdb secret body'),
+      })
+
+      vi.mocked(global.fetch)
+        .mockImplementation((url: string) => {
+          if (url.includes('twitch')) return tokenFetch()
+          return igdbFetch()
+        })
+
+      const { searchGames } = await import('~/services/igdb')
+
+      await expect(searchGames('Zelda', 'client_id', 'client_secret')).rejects.toMatchObject({
+        statusCode: 502,
+        message: 'External service unavailable',
+      })
     })
   })
 

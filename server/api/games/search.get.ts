@@ -12,6 +12,12 @@ export default defineEventHandler(async (event) => {
   const limit = 20
   const offset = page * limit
 
-  const games = await searchGames(q, config.twitchClientId, config.twitchClientSecret, limit, offset)
-  return games
+  try {
+    const games = await searchGames(q, config.twitchClientId, config.twitchClientSecret, limit, offset)
+    return games
+  } catch (err) {
+    if (err instanceof Error && 'statusCode' in err) throw err
+    console.error('Failed to search games:', err)
+    throw createError({ statusCode: 500, message: 'Internal server error' })
+  }
 })

@@ -1,10 +1,14 @@
 <script setup lang="ts">
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, fetchSession } = useAuth()
 
 onMounted(async () => {
-  await useAuth().fetchSession()
+  const expired = await fetchSession()
   if (isAuthenticated.value) {
     await navigateTo('/dashboard')
+    return
+  }
+  if (expired) {
+    await navigateTo('/auth/login', { external: true })
   }
 })
 </script>

@@ -28,3 +28,9 @@ db/dev.db
 
 # OpenCode
 .opencode
+
+# Vercel
+.vercel
+
+# Agent planning artifacts
+docs/superpowers/
