@@ -1,3 +1,5 @@
+import { createError } from 'h3'
+
 interface TwitchTokenResponse {
   access_token: string
   expires_in: number
@@ -31,7 +33,8 @@ export async function getTwitchAppToken(clientId: string, clientSecret: string):
 
   if (!response.ok) {
     const body = await response.text()
-    throw new Error(`Twitch auth failed (${response.status}): ${body}`)
+    console.error('Twitch auth failed:', response.status, body)
+    throw createError({ statusCode: 502, message: 'External service unavailable' })
   }
 
   const data: TwitchTokenResponse = await response.json()

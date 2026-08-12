@@ -8,18 +8,24 @@ export default defineEventHandler(async (event) => {
 
   const { id } = gameIdParamSchema.parse({ id: getRouterParam(event, 'id') })
 
-  const entry = await db.query.backlogEntries.findFirst({
-    where: and(
-      eq(backlogEntries.id, id),
-      eq(backlogEntries.userId, user.id),
-    ),
-  })
+  try {
+    const entry = await db.query.backlogEntries.findFirst({
+      where: and(
+        eq(backlogEntries.id, id),
+        eq(backlogEntries.userId, user.id),
+      ),
+    })
 
-  if (!entry) {
-    throw createError({ statusCode: 404, message: 'Entry not found' })
+    if (!entry) {
+      throw createError({ statusCode: 404, message: 'Entry not found' })
+    }
+
+    await db.delete(backlogEntries).where(eq(backlogEntries.id, id))
+
+    return { success: true }
+  } catch (err) {
+    if (err instanceof Error && 'statusCode' in err) throw err
+    console.error('Failed to delete backlog entry:', err)
+    throw createError({ statusCode: 500, message: 'Internal server error' })
   }
-
-  await db.delete(backlogEntries).where(eq(backlogEntries.id, id))
-
-  return { success: true }
 })

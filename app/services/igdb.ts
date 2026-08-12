@@ -1,4 +1,5 @@
 import { getTwitchAppToken } from './twitch'
+import { createError } from 'h3'
 
 const IGDB_BASE = 'https://api.igdb.com/v4'
 
@@ -17,7 +18,8 @@ async function igdbFetch<T>(endpoint: string, query: string, clientId: string, c
 
   if (!response.ok) {
     const body = await response.text()
-    throw new Error(`IGDB API error (${response.status}): ${body}`)
+    console.error('IGDB API error:', response.status, body)
+    throw createError({ statusCode: 502, message: 'External service unavailable' })
   }
 
   return response.json() as Promise<T>
